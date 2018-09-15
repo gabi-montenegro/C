@@ -1,1 +1,1 @@
-# LP1
+# Exercícios - Linguagem de Programação I
