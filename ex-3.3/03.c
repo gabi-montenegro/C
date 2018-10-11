@@ -3,7 +3,7 @@
 
 
 int main(){
-	short int temps[49];
+	char temps[49];
 	int i=0, media,soma=0, tempmaior=0;
 	char a;
 
