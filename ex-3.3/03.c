@@ -3,13 +3,17 @@
 
 
 int main(){
-	short int temps[49];
+	char temps[49];
 	int i=0, media,soma=0, tempmaior=0;
+	char a;
 
   //Guardando as temperaturas no vetor
 	while(i<=49){
 		printf("Digite uma temperatura: ");
-		scanf("%d", &temps[i]);
+		int x;
+		scanf("%d", &x);
+		a=x;
+		temps[i]=a;
 		soma+=temps[i];
 		i++;
 		
