@@ -35,23 +35,8 @@ int main(void){
 	
 	compra(p,valor);
 	
-	printf("Conta 1: %d ----- Conta 2: %d\n", minha_conta1, minha_conta2);}
-
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+	printf("Conta 1: %d ----- Conta 2: %d\n", minha_conta1, minha_conta2);
+	}
 	
 	
 	system("pause");
