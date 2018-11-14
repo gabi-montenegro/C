@@ -16,7 +16,8 @@ void medias(int *vec, int n){
 }
 
 	int media = (soma/n);
-	printf("\nMedia: %d", media);
+	return media;
+	
 }
 
 
@@ -28,7 +29,8 @@ int main(void){
 	
 	
 	preenche(vec, n);
-	medias(vec,n);
+	int media_total = medias(vec,n);
+	printf("\nMedia: %d", media_total);
 	
 	
 	system("pause");
