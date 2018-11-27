@@ -4,7 +4,7 @@
 void preenche (int *vec, int n){
 	for (int i=0;i<n;i++){
 		printf("Digite o valor %d ----->", i+1);
-		scanf("%d", vec+1);
+		scanf("%d", vec+i);
 	}
 }
 
@@ -12,7 +12,7 @@ void medias(int *vec, int n){
 	int soma=0;
 	
 	for (int i=0;i<n;i++){
-		soma+=*(vec+1);
+		soma+=*(vec+i);
 }
 
 	int media = (soma/n);
