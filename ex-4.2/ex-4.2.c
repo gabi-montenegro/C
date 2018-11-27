@@ -18,7 +18,7 @@ int eh_primo(int n){
 return primo;
 }
 
-int todos_os_primos(int n){
+void todos_os_primos(int n){
 	int i;
 	for(i=1;i<=n;i++){
 		if (eh_primo(i)){
