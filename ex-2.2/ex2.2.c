@@ -8,18 +8,20 @@ int main(){
 	printf("Digite n2: ");
 	scanf("%d", &n2);
 	
-	if (n1<n2){
-	for (i=n1+1;i<n2;i++){
+	int maior = 0, menor = 0;
+	
+	if (n1>n2){
+		maior = n1;	
+		menor = n2;
+		
+	}else{
+		maior = n2;	
+		menor = n1;
+}
+
+	for (int i=menor+1;i<maior;i++){
 		printf("Numeros do intervalo: %i\n", i);
 		
-	}
-	}else{
-		for(i=n1-1;i>n2;i--){
-			printf("Numeros do intervalo: %i\n", i);	
-		
-		}
-	
-	
 	}
 	
 	system("pause");
