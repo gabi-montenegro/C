@@ -19,7 +19,7 @@ int main(){
 		menor = n1;
 }
 
-	for (int i=menor+1;i<maior;i++){
+	for (i=menor+1;i<maior;i++){
 		printf("Numeros do intervalo: %i\n", i);
 		
 	}
