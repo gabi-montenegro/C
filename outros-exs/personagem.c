@@ -2,15 +2,10 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-/*struct Mago{
-	int magia;
-};
+#define reza True;
 
-struct Guerreiro{
-	short int ataque;
-	short int defesa;
-};*/
 enum MEMBRO {MAGO, GUERREIRO, SACERDOTE};
+
 struct Personagem {
 	char nome[33];
 	float altura;
