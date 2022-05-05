@@ -7,14 +7,14 @@
 enum MEMBRO {MAGO, GUERREIRO, SACERDOTE};
 
 struct Personagem {
-	char nome[33];
-	float altura;
-	int idade;
+	char nome[33]; //nome do personagem
+	float altura; //altura do personagem
+	int idade; //idade do personagem
 	enum MEMBRO sub;
 	union{
-			struct {int magia; }; //Mago
-			struct {short int ataque; short int defesa; }; //Guerreiro
-			struct {bool reza; }; //Sacerdote
+			struct {int magia; }; //magia do Mago
+			struct {short int ataque; short int defesa; }; //ataque e defesa do Guerreiro
+			struct {bool reza; }; //reza do Sacerdote
 	};
 };
 
