@@ -3,8 +3,8 @@
 #include <omp.h>
 //https://stackoverflow.com/questions/19775887/c-fill-a-two-dimensional-array-using-a-helper-function
 
-#define SIZE 10 /* Max size of matrices */
-static int A[SIZE][SIZE], B[SIZE][SIZE], C[SIZE][SIZE] = {1};
+#define SIZE 100 /* Max size of matrices */
+int A[SIZE][SIZE], B[SIZE][SIZE], C[SIZE][SIZE];
 
 // void fill_matrix(int **matriz, int N, int num){
 //     for(int i = 0; i < N; i++){
@@ -15,33 +15,24 @@ static int A[SIZE][SIZE], B[SIZE][SIZE], C[SIZE][SIZE] = {1};
 //     }
 // }
 
-int **preenche(int N){
-    int **matriz = (int**) malloc(N* sizeof(int*));
-    for(int i = 0; i < N; i++){
-        matriz[i] = (int *) malloc(sizeof(int) * N);
-    }
-    //int (*matriz)[N] = malloc (N * sizeof (*matriz));
+void preenche(int (*matriz)[SIZE], int N){
 
     for(int i = 0; i < N; i++){
         for (int j = 0; j < N; i++) {
             matriz[i][j] = 1;
         }
     }
-    return matriz;
     
 }
 
 int main(void)
 {
     int i,j,k,N;
-    N=SIZE;
+    N=20;
 
 
-    int **A, **B, **C;
-
-    A = preenche(N);
-    B = preenche(N);
-    C = preenche(N);
+    preenche(A, N);
+    preenche(B, N);
 
 
 
@@ -53,6 +44,7 @@ int main(void)
         {
             for ( j = 0; j < N; j++ )
             {
+                C[i][j] = 0.0;
                 for ( k = 0; k < N; k++ )
                 {
                     C[i][j] = C[i][j] + A[i][j] * B[i][j];
@@ -62,9 +54,8 @@ int main(void)
 
     for(int i = 0; i < N; i++){
         for(int j = 0; j < N; j++){
-            printf("%d   ", C[i][j]);
+            printf("%d\n", C[i][j]);
         }
-        printf("\n");
     }
 
     return 0;
