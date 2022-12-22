@@ -4,7 +4,7 @@
 
 int main(int argc,char *argv[])
 {
-    int rank, numtasks;
+    int rank;
     MPI_Status Stat;
 
     MPI_Init(&argc,&argv);
@@ -38,7 +38,7 @@ int main(int argc,char *argv[])
             MPI_Send(&msg, 2, MPI_CHAR, 0, 1, MPI_COMM_WORLD);
         }
     }    
-
+    MPI_Finalize();
     return 0;
 
 }
