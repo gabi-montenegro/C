@@ -28,7 +28,7 @@ int main(int argc,char *argv[])
         
         for (int k = 0; k < trocas; k++){
             //Send e Recv
-            if(k == 0) start = MPI_Wtime();
+            start = MPI_Wtime();
             MPI_Send(vetor1, tam_vetor, MPI_DOUBLE, 1, 1, MPI_COMM_WORLD);
             MPI_Recv(vetor2, tam_vetor, MPI_DOUBLE, 1, 1, MPI_COMM_WORLD, &Stat);
             // printf("\nProcesso %d - Recebido de %d\n", rank ,Stat.MPI_SOURCE);
@@ -39,18 +39,24 @@ int main(int argc,char *argv[])
         
         for (int m = 0; m < trocas; m++){
             //Send e Recv
-            MPI_Send(vetor2, tam_vetor, MPI_DOUBLE, 0, 1, MPI_COMM_WORLD);
             MPI_Recv(vetor1, tam_vetor, MPI_DOUBLE, 0, 1, MPI_COMM_WORLD, &Stat);
-            if(m == 0) end = MPI_Wtime();
+            end = MPI_Wtime();
+            MPI_Send(vetor2, tam_vetor, MPI_DOUBLE, 0, 1, MPI_COMM_WORLD);
+            
+            
             // printf("\nProcesso %d - Recebido de %d\n", rank ,Stat.MPI_SOURCE);
             // for (int j = 0; j < tam_vetor; j++) printf("--- %.1f", vetor1[j]);
+            
         }
-        printf("\nTempo gasto para enviar um vetor do tamanho %d entre 2 processos: %f\n", tam_vetor, (end-start));
+        
         
     }
-
-        MPI_Finalize();
-        
+    MPI_Barrier(MPI_COMM_WORLD);
+    
+    if(rank == 1) printf("\nTempo gasto para enviar um vetor do tamanho %d entre 2 processos: %.f\n", tam_vetor, (end-start));
+    
+    MPI_Finalize();
+       
         
 
 // for (int j = 0; j < argc; j++){
@@ -61,6 +67,8 @@ int main(int argc,char *argv[])
 //         }
 //         MPI_Barrier(MPI_COMM_WORLD);
 //     }
+
+//time mpirun -n 2 ./ex3 500 200
 
     return 0;
 
