@@ -42,17 +42,19 @@ int main(int argc,char *argv[])
         
         
     } else if(rank == argc-1) { // processo n
-        valor = valor + rank;
+        
         // printf("Num tasks: %d ---- Rank: %d --- Valor: %d --- Sou o ultimo\n", argc, rank, valor);
         MPI_Recv(&valor2, 1, MPI_INT, argc-2, 1, MPI_COMM_WORLD, &Stat); //recebe do penultimo processo
+        valor = valor2 + rank;
         rc = MPI_Send(&valor, 1, MPI_INT, 0, 1, MPI_COMM_WORLD); //envia pro Processo 0
         // printf("Id: %d ---- Valor: %d\n", rank, valor2);
         
         
     } else { //processo i
-        valor = valor + rank;
+        
         // printf("Num tasks: %d ---- Rank: %d --- Valor: %d\n", argc, rank, valor);
         MPI_Recv(&valor2, 1, MPI_INT, rank-1, 1, MPI_COMM_WORLD, &Stat); //recebe do processo i-1
+        valor = valor2 + rank;
         MPI_Send(&valor, 1, MPI_INT, 0, 1, MPI_COMM_WORLD); //envia pro processo 0
         MPI_Send(&valor, 1, MPI_INT, rank+1, 1, MPI_COMM_WORLD); //envia para o processo i+1
         
