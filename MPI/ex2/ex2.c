@@ -27,7 +27,7 @@ int main(int argc,char *argv[])
         }
         
         for(int j = 0; j < tam; j++){
-            MPI_Recv(&msg2, 2, MPI_CHAR, MPI_ANY_SOURCE, 1, MPI_COMM_WORLD, &Stat);
+            MPI_Recv(&msg2, 3, MPI_CHAR, MPI_ANY_SOURCE, 1, MPI_COMM_WORLD, &Stat);
             // printf("Id: %d ---- Msg: %s\n", Stat.MPI_SOURCE, msg2);
             fprintf(f,"Id: %d ---- Msg: %s\n", Stat.MPI_SOURCE, msg2);
         }
@@ -35,7 +35,7 @@ int main(int argc,char *argv[])
     }else{
         //envia as 100 mensagens para o processo 0
         for(int i = 0; i < 100; i++){
-            MPI_Send(&msg, 2, MPI_CHAR, 0, 1, MPI_COMM_WORLD);
+            MPI_Send(&msg, 3, MPI_CHAR, 0, 1, MPI_COMM_WORLD);
         }
     }    
     MPI_Finalize();
