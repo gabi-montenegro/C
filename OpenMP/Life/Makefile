@@ -5,7 +5,7 @@ FLAGS=-O3
 all: life
 
 life: life.c
-	$(CC) $(FLAGS) life.c -o life
+	@gcc life.c -o life -fopenmp
 
 clean:
 	rm life
