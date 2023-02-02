@@ -16,6 +16,9 @@
 #include <stdlib.h>
 #include <mpi.h>
 typedef unsigned char cell_t; 
+int rank;
+int argc;
+//4 matrizes referentes a 4 processos
 
 cell_t ** allocate_board (int size) {
 	cell_t ** board = (cell_t **) malloc(sizeof(cell_t*)*size);
@@ -57,7 +60,8 @@ void play (cell_t ** board, cell_t ** newboard, int size) {
 
 	// #pragma omp parallel for shared (size, board) private (i, j, newboard)
 	/* for each cell, apply the rules of Life */
-
+	
+	
 	for (i=0; i<size; i++)
 		for (j=0; j<size; j++) {
 			a = adjacent_to (board, size, i, j);
@@ -101,7 +105,12 @@ void read_file (FILE * f, cell_t ** board, int size) {
 	}
 }
 
-int main () {
+int main (int argc,char *argv[]) {
+	
+	MPI_Init(&argc,&argv);
+    MPI_Comm_size(MPI_COMM_WORLD, &argc);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
 	int size, steps;
 	FILE    *f;
   f = stdin;
@@ -119,6 +128,32 @@ int main () {
 	#endif
 
 	//#pragma omp for
+	int slice = size % 4; //tamanho da fatia dos n-1 processos
+	int sliceLast = size/argc; //fatia do ultimo processo  
+	int countSlice = 0;
+	int k1, k2, k3, k4;
+
+	//alocando
+	cell_t ** p1 = (cell_t **) malloc(sizeof(cell_t*)*size);
+	cell_t ** p2 = (cell_t **) malloc(sizeof(cell_t*)*size);
+	cell_t ** p3 = (cell_t **) malloc(sizeof(cell_t*)*size);
+	cell_t ** p4 = (cell_t **) malloc(sizeof(cell_t*)*size);
+
+	if(rank == 0){
+		for (k1 = 0; k1 < slice; k1++){
+			p1[k1] = (cell_t *) malloc(sizeof(cell_t)*size);
+		}
+		//envia o resultado do i para o processo 1
+		MPI_Send(&k1, 1, MPI_INT, 1, 1, MPI_COMM_WORLD);
+
+	}
+
+	if (rank == 1){
+		//recebe k do processo 0
+		MPI_Recv(&k2, 1, MPI_INT, MPI_ANY_SOURCE, 1, MPI_COMM_WORLD, &Stat);
+		//for (int k = k2; k2 < slice)
+	}
+
 	for (i=0; i<steps; i++) {
 		play (prev,next,size);
                 #ifdef DEBUG
