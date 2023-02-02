@@ -21,8 +21,6 @@ cell_t ** allocate_board (int size) {
 	cell_t ** board = (cell_t **) malloc(sizeof(cell_t*)*size);
 	int	i;
 
-	// #pragma omp parallel for shared (size) private (i, board)
-	#pragma omp for
 	for (i=0; i<size; i++)
 		board[i] = (cell_t *) malloc(sizeof(cell_t)*size);
 	return board;
@@ -31,8 +29,6 @@ cell_t ** allocate_board (int size) {
 void free_board (cell_t ** board, int size) {
         int     i;
 
-		// #pragma omp parallel for shared (size, board) private (i)
-		// #pragma omp for
         for (i=0; i<size; i++)
                 free(board[i]);
 	free(board);
@@ -48,8 +44,6 @@ int adjacent_to (cell_t ** board, int size, int i, int j) {
 	int sl = (j>0) ? j-1 : j;
         int el = (j+1 < size) ? j+1 : j;
 
-	// #pragma omp parallel for shared (sk, ek, sl, el, board) private (k, l) reduction (+:count)
-	// #pragma omp parallel for
 	for (k=sk; k<=ek; k++)
 		for (l=sl; l<=el; l++)
 			count+=board[k][l];
@@ -63,7 +57,9 @@ void play (cell_t ** board, cell_t ** newboard, int size) {
 
 	// #pragma omp parallel for shared (size, board) private (i, j, newboard)
 	/* for each cell, apply the rules of Life */
-	// #pragma omp parallel for
+	//#pragma omp parallel for
+    //#pragma omp parallel for firstprivate(newboard) shared(size, board) private(i,j)
+	#pragma omp parallel for private(i,j, a)
 	for (i=0; i<size; i++)
 		for (j=0; j<size; j++) {
 			a = adjacent_to (board, size, i, j);
@@ -77,11 +73,11 @@ void play (cell_t ** board, cell_t ** newboard, int size) {
 /* print the life board */
 void print (cell_t ** board, int size) {
 	int	i, j;
-	// #pragma omp parallel for shared (size) private (j, i, board)
-	/* for each row */
-	// #pragma omp parallel for
+
+
 	for (j=0; j<size; j++) {
 		/* print each column position... */
+        // #pragma omp parallel for shared(size) firstprivate(board)
 		for (i=0; i<size; i++) 
 			printf ("%c", board[i][j] ? 'x' : ' ');
 		/* followed by a carriage return */
@@ -95,16 +91,13 @@ void read_file (FILE * f, cell_t ** board, int size) {
 	char	*s = (char *) malloc(size+10);
 	char c;
 
-	// #pragma omp parallel for shared (size) private (i, j) firstprivate(s,board)
-	// #pragma omp parallel for
+
 	for (j=0; j<size; j++) {
 		/* get a string */
 		fgets (s, size+10,f);
 		/* copy the string to the life board */
 		for (i=0; i<size; i++)
 		{
-		 	//c=fgetc(f);
-			//putchar(c);
 			board[i][j] = s[i] == 'x';
 		}
 		//fscanf(f,"\n");
@@ -128,7 +121,7 @@ int main () {
 	printf("----------\n");
 	#endif
 
-	#pragma omp for
+	//#pragma omp for
 	for (i=0; i<steps; i++) {
 		play (prev,next,size);
                 #ifdef DEBUG
