@@ -8,6 +8,6 @@ life-cc: life.c
 	@mpicc life.c -o life
 
 life-run: life.c 
-	@mpirun -n 4 -oversubscribe ./life
+	@mpirun -n 4 ./life
 clean:
 	rm life

@@ -18,15 +18,26 @@
 typedef unsigned char cell_t; 
 int rank;
 int argc;
-//4 matrizes referentes a 4 processos
+//4 matrizes referentes a 4 processos  
+	// cell_t ** p1 = (cell_t **) malloc(sizeof(cell_t*)*size);
+	// cell_t ** p2 = (cell_t **) malloc(sizeof(cell_t*)*size);
+	// cell_t ** p3 = (cell_t **) malloc(sizeof(cell_t*)*size);
+	// cell_t ** p4 = (cell_t **) malloc(sizeof(cell_t*)*size);
 
 cell_t ** allocate_board (int size) {
-	cell_t ** board = (cell_t **) malloc(sizeof(cell_t*)*size);
-	int	i;
+	if (rank = argc-1) { //se for p3 (borda), alocar size+1
+		size = size + 1;
+	} else if (rank != 0){
+		size = size + 2;
+	}
 
-	for (i=0; i<size; i++)
-		board[i] = (cell_t *) malloc(sizeof(cell_t)*size);
-	return board;
+		cell_t ** board = (cell_t **) malloc(sizeof(cell_t*)*size);
+		int	i;
+
+		for (i=0; i<size; i++)
+			board[i] = (cell_t *) malloc(sizeof(cell_t)*size);
+		return board;
+	
 }
 
 void free_board (cell_t ** board, int size) {
@@ -60,6 +71,12 @@ void play (cell_t ** board, cell_t ** newboard, int size) {
 
 	// #pragma omp parallel for shared (size, board) private (i, j, newboard)
 	/* for each cell, apply the rules of Life */
+
+	if(rank == 0){
+		for (int i = 0; i < size; i++){
+			
+		}
+	}
 	
 	
 	for (i=0; i<size; i++)
@@ -92,8 +109,8 @@ void read_file (FILE * f, cell_t ** board, int size) {
 	char	*s = (char *) malloc(size+10);
 	char c;
 
-
-	for (j=0; j<size; j++) {
+	if(rank == 0) { 
+		for (j=0; j<size; j++) {
 		/* get a string */
 		fgets (s, size+10,f);
 		/* copy the string to the life board */
@@ -103,6 +120,10 @@ void read_file (FILE * f, cell_t ** board, int size) {
 		}
 		//fscanf(f,"\n");
 	}
+
+
+	} //processo 0 le tudo
+	
 }
 
 int main (int argc,char *argv[]) {
@@ -116,7 +137,13 @@ int main (int argc,char *argv[]) {
   f = stdin;
 	fscanf(f,"%d %d", &size, &steps);
 	cell_t ** prev = allocate_board (size);
-	read_file (f, prev,size);
+
+	cell_t ** p0 = allocate_board(size); //inserir tamanho para o p0
+	cell_t ** p1 = allocate_board(size % 4); //inserir tamanho para o p1
+	cell_t ** p2 = allocate_board(size % 4); //inserir tamanho para o p2
+	cell_t ** p3 = allocate_board(size/argc); //inserir tamanho para o p3
+
+	read_file (f, p0,(size % 4)); //processo 0 le tudo
 	fclose(f);
 	cell_t ** next = allocate_board (size);
 	cell_t ** tmp;
@@ -127,32 +154,29 @@ int main (int argc,char *argv[]) {
 	printf("----------\n");
 	#endif
 
-	//#pragma omp for
+	//p0 contem as informações de todos os outros processos
 	int slice = size % 4; //tamanho da fatia dos n-1 processos
 	int sliceLast = size/argc; //fatia do ultimo processo  
 	int countSlice = 0;
 	int k1, k2, k3, k4;
 
-	//alocando
-	cell_t ** p1 = (cell_t **) malloc(sizeof(cell_t*)*size);
-	cell_t ** p2 = (cell_t **) malloc(sizeof(cell_t*)*size);
-	cell_t ** p3 = (cell_t **) malloc(sizeof(cell_t*)*size);
-	cell_t ** p4 = (cell_t **) malloc(sizeof(cell_t*)*size);
+	//trnasferir informações
 
-	if(rank == 0){
-		for (k1 = 0; k1 < slice; k1++){
-			p1[k1] = (cell_t *) malloc(sizeof(cell_t)*size);
-		}
-		//envia o resultado do i para o processo 1
-		MPI_Send(&k1, 1, MPI_INT, 1, 1, MPI_COMM_WORLD);
 
-	}
+	// if(rank == 0){
+	// 	for (k1 = 0; k1 < slice; k1++){
+	// 		p1[k1] = (cell_t *) malloc(sizeof(cell_t)*size);
+	// 	}
+	// 	//envia o resultado do i para o processo 1
+	// 	MPI_Send(&k1, 1, MPI_INT, 1, 1, MPI_COMM_WORLD);
 
-	if (rank == 1){
-		//recebe k do processo 0
-		MPI_Recv(&k2, 1, MPI_INT, MPI_ANY_SOURCE, 1, MPI_COMM_WORLD, &Stat);
-		//for (int k = k2; k2 < slice)
-	}
+	// }
+
+	// if (rank == 1){
+	// 	//recebe k do processo 0
+	// 	MPI_Recv(&k2, 1, MPI_INT, MPI_ANY_SOURCE, 1, MPI_COMM_WORLD, &Stat);
+	// 	//for (int k = k2; k2 < slice)
+	// }
 
 	for (i=0; i<steps; i++) {
 		play (prev,next,size);
