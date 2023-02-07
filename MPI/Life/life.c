@@ -67,16 +67,61 @@ int adjacent_to (cell_t ** board, int size, int i, int j) {
 }
 
 void play (cell_t ** board, cell_t ** newboard, int size) {
-	int	i, j, a;
+	int	i, j, a, k1,k2, k3, k4;
 
 	// #pragma omp parallel for shared (size, board) private (i, j, newboard)
 	/* for each cell, apply the rules of Life */
 
 	if(rank == 0){
 		for (int i = 0; i < size; i++){
-			
+			for (j=0; j<size; j++) {
+				if(i >= 0 && i < size % argc){
+					MPI_Send(board[i][j], 1, MPI_CHAR, 0, 1, MPI_COMM_WORLD); //processo 0 envia para ele mesmo
+					MPI_Recv(p0[i][j], 1, MPI_CHAR, 0, 1, MPI_COMM_WORLD, &Stat); //processo 0 recebe dele mesmo
+				}else if( i >= size % argc && i < size % argc * 2) {
+					MPI_Send(board[i][j], 1, MPI_CHAR, 1, 1, MPI_COMM_WORLD); //processo 0 envia para p1
+					// MPI_Recv(p1[i][j], 1, MPI_CHAR, 0, 1, MPI_COMM_WORLD, &Stat); //processo 1 recebe de p0
+				} else if (i >= size % argc * 2 && i < size % argc * 3) {
+					MPI_Send(board[i][j], 1, MPI_CHAR, 2, 1, MPI_COMM_WORLD); //processo 0 envia para p2
+					// MPI_Recv(p2[i][j], 1, MPI_CHAR, 0, 1, MPI_COMM_WORLD, &Stat); //processo 1 recebe de p0
+				} else if(i >= size % argc * 3 && i < size){
+					MPI_Send(board[i][j], 1, MPI_CHAR, 3, 1, MPI_COMM_WORLD); //processo 0 envia para p3
+				}
+			}
 		}
 	}
+	//rever lógica dos loops
+	if (rank == 1){
+		for (int i = 0; i < size; i++){
+			for (j=0; j<size; j++) {
+				if(i > 0 && i < size % argc * 2){
+					MPI_Recv(p1[i][j], 1, MPI_CHAR, 0, 1, MPI_COMM_WORLD, &Stat); //processo 1 recebe de p0
+				}
+			}
+		}
+	}
+
+	if (rank == 2) {
+		for (int i = 0; i < size; i++){
+			for (j=0; j<size; j++) {
+				if(i > 0 && i <= size % argc + 1){
+					MPI_Recv(p2[i][j], 1, MPI_CHAR, 0, 1, MPI_COMM_WORLD, &Stat); //processo 2 recebe de p0
+				}
+			}
+		}
+	}
+
+	if (rank == 3) {
+		for (int i = 0; i < size; i++){
+			for (j=0; j<size; j++) {
+				if(i > 0 && i <= size % argc + 1){
+					MPI_Recv(p3[i][j], 1, MPI_CHAR, 0, 1, MPI_COMM_WORLD, &Stat); //processo 3 recebe de p0
+				}
+			}
+		}
+	}
+
+	
 	
 	
 	for (i=0; i<size; i++)
@@ -134,7 +179,7 @@ int main (int argc,char *argv[]) {
 
 	int size, steps;
 	FILE    *f;
-  f = stdin;
+  	f = stdin;
 	fscanf(f,"%d %d", &size, &steps);
 	cell_t ** prev = allocate_board (size);
 
@@ -179,7 +224,7 @@ int main (int argc,char *argv[]) {
 	// }
 
 	for (i=0; i<steps; i++) {
-		play (prev,next,size);
+		play (p0,next,size);
                 #ifdef DEBUG
 		printf("%d ----------\n", i);
 		print (next,size);
