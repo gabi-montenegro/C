@@ -37,6 +37,7 @@ cell_t ** p3;
 cell_t ** allocate_board (int size) {
 	int sizeLocal;
 	cell_t ** board;
+	
 	if (rank = argc-1) { //se for p3 (borda), alocar size+1
 		sizeLocal = size + 1;
 		board = (cell_t **) malloc(sizeof(cell_t*)*sizeLocal);
@@ -99,50 +100,50 @@ void play (cell_t ** board, cell_t ** newboard, int size) {
 void fill_threads_vector(cell_t ** p0){
 if(rank == 0){
 		for (int i = 0; i < size; i++){ // envia os vizinhos tbm
-			for (int j=0; j<size; j++) { //tira o j (vamos enviar o ponteiro de tamanho size)
+			//for (int j=0; j<size; j++) { //tira o j (vamos enviar o ponteiro de tamanho size)
 				if(i >= 0 && i < size % argc){ //elem 0 à 2
-					MPI_Send(&(p0[i][j]), size+1, MPI_CHAR, 0, 1, MPI_COMM_WORLD); //processo 0 envia para ele mesmo
-					MPI_Recv(&(p0[i][j]), size+1, MPI_CHAR, 0, 1, MPI_COMM_WORLD, &Stat); //processo 0 recebe dele mesmo
-				}else if( i >= size % argc && i < size % argc * 2) {
-					MPI_Send(&(p0[i][j]), size+1, MPI_CHAR, 1, 1, MPI_COMM_WORLD); //processo 0 envia para p1
+					MPI_Send(&(p0[i]), size, MPI_CHAR, 0, 1, MPI_COMM_WORLD); //processo 0 envia para ele mesmo
+					MPI_Recv(&(p0[i]), size, MPI_CHAR, 0, 1, MPI_COMM_WORLD, &Stat); //processo 0 recebe dele mesmo
+				}else if( i >= size % argc && i < size % argc * 2) { // elem 3 a 5
+					MPI_Send(&(p0[i]), size, MPI_CHAR, 1, 1, MPI_COMM_WORLD); //processo 0 envia para p1
 					// MPI_Recv(p1[i][j], 1, MPI_CHAR, 0, 1, MPI_COMM_WORLD, &Stat); //processo 1 recebe de p0
 				} else if (i >= size % argc * 2 && i < size % argc * 3) {
-					MPI_Send(&(p0[i][j]), size+1, MPI_CHAR, 2, 1, MPI_COMM_WORLD); //processo 0 envia para p2
+					MPI_Send(&(p0[i]), size, MPI_CHAR, 2, 1, MPI_COMM_WORLD); //processo 0 envia para p2
 					// MPI_Recv(p2[i][j], 1, MPI_CHAR, 0, 1, MPI_COMM_WORLD, &Stat); //processo 1 recebe de p0
 				} else if(i >= size % argc * 3 && i < size){
-					MPI_Send(&(p0[i][j]), size+1, MPI_CHAR, 3, 1, MPI_COMM_WORLD); //processo 0 envia para p3
+					MPI_Send(&(p0[i]), size, MPI_CHAR, 3, 1, MPI_COMM_WORLD); //processo 0 envia para p3
 				}
-			}
+			//}
 		}
 	}
 	//rever lógica dos loops (inserir aqui os vizinhos)
 	if (rank == 1){
-		for (int i = 0; i < size; i++){
-			for (int j=0; j<size; j++) {
-				if(i > 0 && i < size % argc * 2){
-					MPI_Recv(&(p1[i][j]), size+1, MPI_CHAR, 0, 1, MPI_COMM_WORLD, &Stat); //processo 1 recebe de p0
+		for (int i = 0; i < (size % argc + 2); i++){
+			//for (int j=0; j<size; j++) {
+				if(i > 0 && i <= size % argc){ //preeche 1 ate 4
+					MPI_Recv(&(p1[i]), size, MPI_CHAR, 0, 1, MPI_COMM_WORLD, &Stat); //processo 1 recebe de p0
 				}
-			}
+			//}
 		}
 	}
 
 	if (rank == 2) {
-		for (int i = 0; i < size; i++){
-			for (int j=0; j<size; j++) {
-				if(i > 0 && i <= size % argc + 1){
-					MPI_Recv(&(p2[i][j]), size+1, MPI_CHAR, 0, 1, MPI_COMM_WORLD, &Stat); //processo 2 recebe de p0
+		for (int i = 0; i < size % argc + 2; i++){
+			//for (int j=0; j<size; j++) {
+				if(i > 0 && i <= size % argc){ //preenche 1 ate 3
+					MPI_Recv(&(p2[i]), size, MPI_CHAR, 0, 1, MPI_COMM_WORLD, &Stat); //processo 2 recebe de p0
 				}
-			}
+			//}
 		}
 	}
 
 	if (rank == 3) {
-		for (int i = 0; i < size; i++){
-			for (int j=0; j<size; j++) {
-				if(i > 0 && i <= size % argc + 1){
-					MPI_Recv(&(p3[i][j]), size+1, MPI_CHAR, 0, 1, MPI_COMM_WORLD, &Stat); //processo 3 recebe de p0
+		for (int i = 0; i < size / argc + 1; i++){
+			//for (int j=0; j<size; j++) {
+				if(i > 0 && i <= size / argc){ //preeche de 1 a 2
+					MPI_Recv(&(p3[i]), size, MPI_CHAR, 0, 1, MPI_COMM_WORLD, &Stat); //processo 3 recebe de p0
 				}
-			}
+			//}
 		}
 	}
 }
@@ -239,14 +240,61 @@ int main (int argc,char *argv[]) {
 
 	for (i=0; i<steps; i++) {
 		//mandar vizinhos a cada passo
-		play (p0,next,size);
-                #ifdef DEBUG
-		printf("%d ----------\n", i);
-		print (next,size);
-		#endif
-		tmp = next;
-		next = prev;
-		prev = tmp;
+		if (rank == 0) {
+			MPI_Send(&(p0[size / argc]), size, MPI_CHAR, 1, 1, MPI_COMM_WORLD); //envia p0[2] para processo 1 (p1[0])
+			MPI_Recv(&(p0[size % argc]), size, MPI_CHAR, 1, 1, MPI_COMM_WORLD, &Stat); //recebe p1[1] do processo 1 para o processo 0 (p0[3])
+
+			play (p0,next,size);
+                //#ifdef DEBUG
+			printf("%d ----------\n", i);
+			print (next,size);
+			//#endif
+			tmp = next;
+			next = prev;
+			prev = tmp;
+		} else if (rank == 1) {
+			MPI_Recv(&(p1[0]), size, MPI_CHAR, 0, 1, MPI_COMM_WORLD, &Stat); //recebe p0[2] do processo 0
+			MPI_Send(&(p1[1]), size, MPI_CHAR, 0, 1, MPI_COMM_WORLD); //envia p1[1] para processo 0 
+			MPI_Send(&(p1[size % argc]), size, MPI_CHAR, 2, 1, MPI_COMM_WORLD); //envia p1[3] para processo 2 
+			MPI_Recv(&(p1[size % argc + 1]), size, MPI_CHAR, 2, 1, MPI_COMM_WORLD, &Stat); //recebe p1[4]
+
+			play (p1,next,size);
+                //#ifdef DEBUG
+			printf("%d ----------\n", i);
+			print (next,size);
+			//#endif
+			tmp = next;
+			next = prev;
+			prev = tmp;
+			
+		} else if (rank == 2) {
+			MPI_Recv(&(p2[0]), size, MPI_CHAR, 1, 1, MPI_COMM_WORLD, &Stat); 
+			MPI_Send(&(p2[1]), size, MPI_CHAR, 1, 1, MPI_COMM_WORLD); 
+			MPI_Send(&(p2[size % argc]), size, MPI_CHAR, 3, 1, MPI_COMM_WORLD); 
+			MPI_Recv(&(p1[size % argc + 1]), size, MPI_CHAR, 3, 1, MPI_COMM_WORLD, &Stat); 
+
+			play (p2,next,size);
+                //#ifdef DEBUG
+			printf("%d ----------\n", i);
+			print (next,size);
+			//#endif
+			tmp = next;
+			next = prev;
+			prev = tmp;
+		} else {
+			MPI_Recv(&(p3[0]), size, MPI_CHAR, 2, 1, MPI_COMM_WORLD, &Stat);
+			MPI_Send(&(p3[1]), size, MPI_CHAR, 2, 1, MPI_COMM_WORLD);  
+
+			play (p3,next,size);
+                //#ifdef DEBUG
+			printf("%d ----------\n", i);
+			print (next,size);
+			//#endif
+			tmp = next;
+			next = prev;
+			prev = tmp;
+		}
+		
 	}
 	print (prev,size);
 	free_board(prev,size);
