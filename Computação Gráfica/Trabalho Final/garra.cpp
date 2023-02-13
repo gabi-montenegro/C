@@ -11,14 +11,16 @@
 using namespace std;
 
 char filenameTexMetal1[20] = "./metalTexture1.bmp";
+char filenameTexMetal2[20] = "./metalTexture2.bmp";
 
 GLuint _textureIdMetal1;
+GLuint _textureIdMetal2;
 GLuint _textureIdSphere;
 GLuint _textureIdCylinder;
-GLuint _textureIdEllipse;
+GLuint _textureIdCylinderTable;
 GLUquadric* quadSphere;
 GLUquadric* quadCylinder;
-GLUquadric* quadEllipse;
+GLUquadric* quadCircle;
 
 bool textureOn = true;
 
@@ -40,10 +42,13 @@ float viewAngleZ = 15.0;
 
 float angleArm = 90.0;
 float angleForearm = 90.0;
+float angleForearmLeft = -90.0;
 float angleHand = 0.0;
 float angleClampZ = 0.0;
 float angleClampY = 0.0;
 float angleHead = 0.0;
+float angleEyes = 90;
+float angleNose = 180;
 
 //makes the image into a texture, and returns the id of the texture
 GLuint loadTexture(char* filename) {
@@ -69,11 +74,12 @@ GLuint loadTexture(char* filename) {
 void initRendering(void) {
 	quadSphere = gluNewQuadric();
 	quadCylinder = gluNewQuadric();
-	quadEllipse = gluNewQuadric();
+	quadCircle = gluNewQuadric();
 	_textureIdMetal1 = loadTexture(filenameTexMetal1);
+	_textureIdMetal2 = loadTexture(filenameTexMetal2);
 	_textureIdCylinder = _textureIdMetal1;
 	_textureIdSphere = _textureIdMetal1;
-	_textureIdEllipse = _textureIdMetal1;
+	_textureIdCylinderTable = _textureIdMetal2;
 }
 
 void handleKeypress(unsigned char key, int x, int y) {
@@ -126,6 +132,14 @@ void handleKeypress(unsigned char key, int x, int y) {
 		if (angleClampY > 0) angleClampY -= 3;
 		glutPostRedisplay();
 		break;
+	case '8':
+		if (angleForearmLeft < 90) angleForearmLeft += 3;
+		glutPostRedisplay();
+		break;
+	case '9':
+		if (angleForearmLeft > -90) angleForearmLeft -= 3;
+		glutPostRedisplay();
+		break;
 	}
 }
 
@@ -136,9 +150,15 @@ void handleResize(int w, int h) {
 	gluPerspective(60.0, (float)w / (float)h, 1.0, 50.0);
 }
 
-void drawCylinder(float diameter, float lenght) {
-	if (textureOn) {
+void drawCylinder(float diameter, float lenght, bool isTable) {
+	if (textureOn && !isTable) {
 		glBindTexture(GL_TEXTURE_2D, _textureIdCylinder);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		gluQuadricTexture(quadCylinder, 1);
+	}
+	else if (textureOn && isTable) {
+		glBindTexture(GL_TEXTURE_2D, _textureIdCylinderTable);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		gluQuadricTexture(quadCylinder, 1);
@@ -184,17 +204,27 @@ void drawSphere(float diameter) {
 	gluSphere(quadSphere, diameter, 40.0, 40.0);
 }
 
-void drawEllipse(float diameterX, float diameterY) {
-	if (textureOn) {
-		glBindTexture(GL_TEXTURE_2D, _textureIdSphere);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		gluQuadricTexture(quadEllipse, 1);
-	}
-	else
-		gluQuadricTexture(quadEllipse, 0);
-	gluDisk(quadEllipse, diameterX, diameterY, 40, 30);
-}
+//void drawCircle() {
+//	if (textureOn) {
+//		glBindTexture(GL_TEXTURE_2D, _textureIdCircle);
+//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//		gluQuadricTexture(quadCircle, 1);
+//	}
+//	else
+//		gluQuadricTexture(quadCircle, 0);
+//	//gluDisk(quadEllipse, diameterX, diameterY, 4s0, 30);
+//	glBegin(GL_POINTS);
+//	float x, y;
+//	for (float angle = 0.0f; angle <= (2.0f * PI); angle += 0.01f)
+//	{
+//		x = 1.0f * sin(angle);
+//		y = 1.0f * cos(angle);
+//		glVertex3f(x, y, 0.0f);
+//	}
+//	glEnd();
+//
+//}
 
 void drawScene(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -214,8 +244,13 @@ void drawScene(void) {
 	// drawing color
 	glColor3f(1.0f, 1.0f, 1.0f);
 
+	//table
+	drawCylinder(8, 1, true); // desenha cilindro base
+	glTranslatef(0.0f, 0.0f, 1); // translação do cilindro base
+	drawDisk(20, 15); //disco que fica dentro do cilindro
+
 	// draws the base
-	drawCylinder(diameterBase, heightBase); // desenha cilindro base
+	drawCylinder(diameterBase, heightBase, false); // desenha cilindro base
 	glTranslatef(0.0f, 0.0f, heightBase); // translação do cilindro base
 	drawDisk(diameterCylinder, diameterBase); //disco que fica dentro do cilindro
 
@@ -223,18 +258,18 @@ void drawScene(void) {
 	glRotatef(angleArm, 0.0f, 0.0f, 1.0f); //angulo do braço em relação ao referencial (braço aberto)
 
 	//draws the arm
-	drawCylinder(diameterCylinder, sizeArm); //corpo do robo
+	drawCylinder(diameterCylinder, sizeArm, false); //corpo do robo
 
 	glPushMatrix();
 
 	// move to forearm referential
 	glTranslatef(0.0f, 0.0f, sizeArm + diameterSphere / 5); // translação do braço
-	glRotatef(90, 0.0f, 1.0f, 0.0f); // rotação do braço aberto
+	glRotatef(angleForearm, 0.0f, 1.0f, 0.0f); // rotação do braço aberto
 
 	//draws the forearm
 	drawSphere(diameterSphere); //coração do robô
 	glTranslatef(0.0f, 0.0f, diameterSphere / 5); //translação do braço
-	drawCylinder(diameterCylinder, sizeForearm); // antibraço do robô (somente cilindro)
+	drawCylinder(diameterCylinder, sizeForearm, false); // antibraço do robô (somente cilindro)
 
 	//move to clamp referential
 	glTranslatef(0.0f, 0.0f, sizeForearm + diameterSphere / 5); // translação do pulso + mão
@@ -249,14 +284,14 @@ void drawScene(void) {
 	//draws top part of clamp
 	glRotatef(angleClampY + 60, 0.0f, 1.0f, 0.0f); //angulo dos dedos
 
-	drawCylinder(diameterCylinder / 3, sizeClampPart); // cilindro 1 do dedo inferior 
+	drawCylinder(diameterCylinder / 3, sizeClampPart, false); // cilindro 1 do dedo inferior 
 	glTranslatef(0.0f, 0.0f, sizeClampPart + diameterSphere / 15); // translação dos dedos tirando a parte de cima
 	drawSphere(diameterSphere / 3); // articulação 1 do dedo inferior
 
 	glTranslatef(0.0f, 0.0f, diameterSphere / 15); // translação do cilindro 2 em diante do dedo inferior
 	glRotatef(-60, 0.0f, 1.0f, 0.0f); // rotação da esfera em diante
 
-	drawCylinder(diameterCylinder / 3, sizeClampPart); // cilindro 2 do dedo inferior
+	drawCylinder(diameterCylinder / 3, sizeClampPart, false); // cilindro 2 do dedo inferior
 	glTranslatef(0.0f, 0.0f, sizeClampPart + diameterSphere / 15); //translação da ultima articulação (esfera) + cilindro 
 	drawSphere(diameterSphere / 3); // esfera da mão (ultima articulação)
 
@@ -271,14 +306,14 @@ void drawScene(void) {
 	//draws bottom part of clamp
 	glRotatef(-angleClampY - 60, 0.0f, 1.0f, 0.0f);
 
-	drawCylinder(diameterCylinder / 3, sizeClampPart);
+	drawCylinder(diameterCylinder / 3, sizeClampPart, false);
 	glTranslatef(0.0f, 0.0f, sizeClampPart + diameterSphere / 15);
 	drawSphere(diameterSphere / 3);
 
 	glTranslatef(0.0f, 0.0f, diameterSphere / 15);
 	glRotatef(60, 0.0f, 1.0f, 0.0f);
 
-	drawCylinder(diameterCylinder / 3, sizeClampPart);
+	drawCylinder(diameterCylinder / 3, sizeClampPart, false);
 	glTranslatef(0.0f, 0.0f, sizeClampPart + diameterSphere / 15);
 	drawSphere(diameterSphere / 3);
 
@@ -296,12 +331,12 @@ void drawScene(void) {
 	//braço esquerdo
 	//glTranslatef(0.0f, 0.0f, (diameterSphere / 5 - sizeArm) + 0.8); // translação do braço
 	glTranslatef(0.0f, 0.0f, (diameterSphere / 5 + sizeArm));
-	glRotatef(-90, 0.0f, 1.0f, 0.0f); // rotação do braço aberto
+	glRotatef(angleForearmLeft, 0.0f, 1.0f, 0.0f); // rotação do braço aberto
 
 	//draws the forearm
 	//drawSphere(diameterSphere); //coração do robô
 	//glTranslatef(0.0f, 0.0f, diameterSphere / 5); //translação do braço
-	drawCylinder(diameterCylinder, sizeForearm); // antibraço do robô (somente cilindro)
+	drawCylinder(diameterCylinder, sizeForearm, false); // antibraço do robô (somente cilindro)
 
 	//move to clamp referential
 	glTranslatef(0.0f, 0.0f, sizeForearm + diameterSphere / 5); // translação do pulso 
@@ -318,14 +353,14 @@ void drawScene(void) {
 	//draws top part of clamp
 	glRotatef(angleClampY + 60, 0.0f, 1.0f, 0.0f); //angulo dos dedos
 
-	drawCylinder(diameterCylinder / 3, sizeClampPart); // cilindro 1 do dedo inferior 
+	drawCylinder(diameterCylinder / 3, sizeClampPart, false); // cilindro 1 do dedo inferior 
 	glTranslatef(0.0f, 0.0f, sizeClampPart + diameterSphere / 15); // translação dos dedos tirando a parte de cima
 	drawSphere(diameterSphere / 3); // articulação 1 do dedo inferior
 
 	glTranslatef(0.0f, 0.0f, diameterSphere / 15); // translação do cilindro 2 em diante do dedo inferior
 	glRotatef(-60, 0.0f, 1.0f, 0.0f); // rotação da esfera em diante
 
-	drawCylinder(diameterCylinder / 3, sizeClampPart); // cilindro 2 do dedo inferior
+	drawCylinder(diameterCylinder / 3, sizeClampPart, false); // cilindro 2 do dedo inferior
 	glTranslatef(0.0f, 0.0f, sizeClampPart + diameterSphere / 15); //translação da ultima articulação (esfera) + cilindro 
 	drawSphere(diameterSphere / 3); // esfera da mão (ultima articulação)
 
@@ -339,14 +374,14 @@ void drawScene(void) {
 	//draws bottom part of clamp
 	glRotatef(-angleClampY - 60, 0.0f, 1.0f, 0.0f);
 
-	drawCylinder(diameterCylinder / 3, sizeClampPart);
+	drawCylinder(diameterCylinder / 3, sizeClampPart, false);
 	glTranslatef(0.0f, 0.0f, sizeClampPart + diameterSphere / 15);
 	drawSphere(diameterSphere / 3);
 
 	glTranslatef(0.0f, 0.0f, diameterSphere / 15);
 	glRotatef(60, 0.0f, 1.0f, 0.0f);
 
-	drawCylinder(diameterCylinder / 3, sizeClampPart);
+	drawCylinder(diameterCylinder / 3, sizeClampPart, false);
 	glTranslatef(0.0f, 0.0f, sizeClampPart + diameterSphere / 15);
 	drawSphere(diameterSphere / 3);
 
@@ -366,7 +401,7 @@ void drawScene(void) {
 	////draws the forearm
 	////drawSphere(diameterSphere); //coração do robô
 	////glTranslatef(0.0f, 0.0f, diameterSphere / 5); //translação do braço
-	drawCylinder(diameterCylinder, 1); // pescoço
+	drawCylinder(diameterCylinder, 1, false); // pescoço
 
 	//CABEÇA
 	glPushMatrix();
@@ -374,9 +409,69 @@ void drawScene(void) {
 	glRotatef(angleHead, 0.0f, 0.0f, 1.0f); //rotação cabeça
 	drawSphere(1.2);
 
+	glPopMatrix();
+	glPushMatrix();
+
+	//olho direito
+	glTranslatef(0.5f, -1.0f, 2); // translação cabeça
+	glRotatef(angleEyes, 90.0f, 0.0f, 0.0f); //rotação cabeça
+	
+	/*glbegin(gl_points);
+	float x, y;
+	glcolor3f(0, 1, 0);
+	for (float angle = 0.0f; angle <= (2.0f * pi); angle += 0.01f)
+	{
+		x = 50.0f * sin(angle);
+		y = 50.0f * cos(angle);
+		glvertex3f(x, y, 0.0f);
+	}
+	glend();*/
+	glColor3f(0, 0, 0);
+	drawDisk(0,0.2);
+
+
+	glPopMatrix();
+	glPushMatrix();
+
+	//olho esquerdo
+	glTranslatef(-0.5f, -1.0f, 2); // translação cabeça
+	glRotatef(angleEyes, 90.0f, 0.0f, 0.0f); //rotação cabeça
+
+	/*glbegin(gl_points);
+	float x, y;
+	glcolor3f(0, 1, 0);
+	for (float angle = 0.0f; angle <= (2.0f * pi); angle += 0.01f)
+	{
+		x = 50.0f * sin(angle);
+		y = 50.0f * cos(angle);
+		glvertex3f(x, y, 0.0f);
+	}
+	glend();*/
+	glColor3f(0, 0, 0);
+	drawDisk(0, 0.2);
+
+	glPopMatrix();
+	glPushMatrix();
+
+	//lingua
+	glTranslatef(0.0f, -1.0f, 2);
+	glRotatef(angleNose, 0.0f, 0.0f, 0.0f);
+	glColor3f(1, 0, 0);
+	drawCone(0.1, 0.5);
 
 	
+	/*glPopMatrix();*/
 
+	//glTranslatef(0.35f, -2.0f, 2);
+	//glRotatef(angleNose, 0.0f, 0.0f, 0.0f);
+	////glColor3f(0, 0, 1);
+	////drawCone(0.4, 0.5);
+	//glBegin(GL_LINES);
+	//glColor3f(0, 0, 1);
+	//glVertex3f(0.2, 0.5, 2);
+	//glColor3f(0, 0, 1);
+	//glVertex3f(0.5, 0.5, 2);
+	//glEnd();
 
 
 	glPopMatrix();
