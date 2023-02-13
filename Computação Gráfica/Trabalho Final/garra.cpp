@@ -10,8 +10,8 @@
 
 using namespace std;
 
-char filenameTexMetal1[20] = "./metalTexture1.bmp";
-char filenameTexMetal2[20] = "./metalTexture2.bmp";
+char filenameTexMetal1[20] = "metalTexture1.bmp";
+char filenameTexMetal2[20] = "metalTexture2.bmp";
 
 GLuint _textureIdMetal1;
 GLuint _textureIdMetal2;
@@ -47,8 +47,8 @@ float angleHand = 0.0;
 float angleClampZ = 0.0;
 float angleClampY = 0.0;
 float angleHead = 0.0;
-float angleEyes = 90;
-float angleNose = 180;
+float angleEyes = 90.0;
+float angleNose = 180.0;
 
 //makes the image into a texture, and returns the id of the texture
 GLuint loadTexture(char* filename) {
@@ -132,12 +132,29 @@ void handleKeypress(unsigned char key, int x, int y) {
 		if (angleClampY > 0) angleClampY -= 3;
 		glutPostRedisplay();
 		break;
-	case '8':
+	case '7':
 		if (angleForearmLeft < 90) angleForearmLeft += 3;
 		glutPostRedisplay();
 		break;
-	case '9':
+	case '8':
 		if (angleForearmLeft > -90) angleForearmLeft -= 3;
+		glutPostRedisplay();
+		break;
+	case '9':
+		//cabeca
+		//if (angleHead > 0) {
+			angleHead += 3;
+			//angleEyes += 3;
+			//angleNose += 3;
+		//}
+		glutPostRedisplay();
+		break;
+	case '0':
+		//if (angleHead < 180) {
+			angleHead -= 3;
+			//angleEyes -= 3;
+			//angleNose -= 3;
+		//}
 		glutPostRedisplay();
 		break;
 	}
@@ -242,13 +259,15 @@ void drawScene(void) {
 		gluLookAt(eyeX, eyeY, eyeZ, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0);
 
 	// drawing color
-	glColor3f(1.0f, 1.0f, 1.0f);
+	 glColor3f(0.5f, 0.5f, 0.5f);
 
 	//table
-	drawCylinder(8, 1, true); // desenha cilindro base
-	glTranslatef(0.0f, 0.0f, 1); // translação do cilindro base
-	drawDisk(20, 15); //disco que fica dentro do cilindro
+	drawCylinder(8, 0.5, true); // desenha cilindro base
+	glTranslatef(0.0f, 0.0f, 0.5); // translação do cilindro base
+	glColor3f(0.25, 0.25, 0.25);
+	drawDisk(0.3, 8); //disco que fica dentro do cilindro
 
+	glColor3f(1, 1, 1);
 	// draws the base
 	drawCylinder(diameterBase, heightBase, false); // desenha cilindro base
 	glTranslatef(0.0f, 0.0f, heightBase); // translação do cilindro base
