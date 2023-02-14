@@ -35,23 +35,15 @@ cell_t ** p3;
 	// cell_t ** p4 = (cell_t **) malloc(sizeof(cell_t*)*size);
 
 cell_t ** allocate_board (int size) {
-	int sizeLocal;
 	cell_t ** board;
+	board = (cell_t **) malloc(sizeof(cell_t*)*size);
 	
-	if (rank = argc-1) { //se for p3 (borda), alocar size+1
-		sizeLocal = size + 1;
-		board = (cell_t **) malloc(sizeof(cell_t*)*sizeLocal);
-	} else if (rank != 0){
-		sizeLocal = size + 2;
-		board = (cell_t **) malloc(sizeof(cell_t*)*sizeLocal);
-	}
 
-		
-		int	i;
+	int	i;
 
-		for (i=0; i<sizeLocal; i++)
-			board[i] = (cell_t *) malloc(sizeof(cell_t)*sizeLocal);
-		return board;
+	for (i=0; i<size; i++)
+			board[i] = (cell_t *) malloc(sizeof(cell_t)*size);
+	return board;
 	
 }
 
@@ -107,10 +99,10 @@ if(rank == 0){
 				}else if( i >= size % argc && i < size % argc * 2) { // elem 3 a 5
 					MPI_Send(&(p0[i]), size, MPI_CHAR, 1, 1, MPI_COMM_WORLD); //processo 0 envia para p1
 					// MPI_Recv(p1[i][j], 1, MPI_CHAR, 0, 1, MPI_COMM_WORLD, &Stat); //processo 1 recebe de p0
-				} else if (i >= size % argc * 2 && i < size % argc * 3) {
+				} else if (i >= size % argc * 2 && i < size % argc * 3) { //elem 6 a 8
 					MPI_Send(&(p0[i]), size, MPI_CHAR, 2, 1, MPI_COMM_WORLD); //processo 0 envia para p2
 					// MPI_Recv(p2[i][j], 1, MPI_CHAR, 0, 1, MPI_COMM_WORLD, &Stat); //processo 1 recebe de p0
-				} else if(i >= size % argc * 3 && i < size){
+				} else if(i >= size % argc * 3 && i < size){ //elem 9 a 10 
 					MPI_Send(&(p0[i]), size, MPI_CHAR, 3, 1, MPI_COMM_WORLD); //processo 0 envia para p3
 				}
 			//}
@@ -120,7 +112,7 @@ if(rank == 0){
 	if (rank == 1){
 		for (int i = 0; i < (size % argc + 2); i++){
 			//for (int j=0; j<size; j++) {
-				if(i > 0 && i <= size % argc){ //preeche 1 ate 4
+				if(i > 0 && i <= size % argc){ //preeche 1 ate 3
 					MPI_Recv(&(p1[i]), size, MPI_CHAR, 0, 1, MPI_COMM_WORLD, &Stat); //processo 1 recebe de p0
 				}
 			//}
@@ -198,9 +190,9 @@ int main (int argc,char *argv[]) {
 	cell_t ** prev = allocate_board (size);
 
 	cell_t ** p0 = allocate_board(size); //inserir tamanho para o p0
-	cell_t ** p1 = allocate_board(size % 4); //inserir tamanho para o p1
-	cell_t ** p2 = allocate_board(size % 4); //inserir tamanho para o p2
-	cell_t ** p3 = allocate_board(size/argc); //inserir tamanho para o p3
+	cell_t ** p1 = allocate_board((size % 4) + 2); //inserir tamanho para o p1
+	cell_t ** p2 = allocate_board((size % 4) + 2); //inserir tamanho para o p2
+	cell_t ** p3 = allocate_board(size % argc); //inserir tamanho para o p3
 
 	read_file (f, p0,(size % 4)); //processo 0 le tudo
 	fclose(f);
@@ -271,7 +263,7 @@ int main (int argc,char *argv[]) {
 			MPI_Recv(&(p2[0]), size, MPI_CHAR, 1, 1, MPI_COMM_WORLD, &Stat); 
 			MPI_Send(&(p2[1]), size, MPI_CHAR, 1, 1, MPI_COMM_WORLD); 
 			MPI_Send(&(p2[size % argc]), size, MPI_CHAR, 3, 1, MPI_COMM_WORLD); 
-			MPI_Recv(&(p1[size % argc + 1]), size, MPI_CHAR, 3, 1, MPI_COMM_WORLD, &Stat); 
+			MPI_Recv(&(p2[size % argc + 1]), size, MPI_CHAR, 3, 1, MPI_COMM_WORLD, &Stat); 
 
 			play (p2,next,size);
                 //#ifdef DEBUG
