@@ -142,7 +142,7 @@ void handleKeypress(unsigned char key, int x, int y) {
 		break;
 	case '9':
 		//cabeca
-		//if (angleHead > 0) {
+		if (angleHead < 90) 
 			angleHead += 3;
 			//angleEyes += 3;
 			//angleNose += 3;
@@ -150,12 +150,14 @@ void handleKeypress(unsigned char key, int x, int y) {
 		glutPostRedisplay();
 		break;
 	case '0':
-		//if (angleHead < 180) {
+		if (angleHead > 0) 
 			angleHead -= 3;
 			//angleEyes -= 3;
 			//angleNose -= 3;
 		//}
 		glutPostRedisplay();
+		break;
+	default: 
 		break;
 	}
 }
