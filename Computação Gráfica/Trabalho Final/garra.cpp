@@ -199,9 +199,15 @@ void drawCone(float diameter, float lenght) {
 	gluCylinder(quadCylinder, diameter, 0, lenght, 40.0, lenght * 30.0);
 }
 
-void drawDisk(float diameterInner, float diameterOuter) {
-	if (textureOn) {
+void drawDisk(float diameterInner, float diameterOuter, bool isTable) {
+	if (textureOn && ! isTable) {
 		glBindTexture(GL_TEXTURE_2D, _textureIdCylinder);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		gluQuadricTexture(quadCylinder, 1);
+	}
+	else if (textureOn && isTable) {
+		glBindTexture(GL_TEXTURE_2D, _textureIdCylinderTable);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		gluQuadricTexture(quadCylinder, 1);
@@ -267,13 +273,13 @@ void drawScene(void) {
 	drawCylinder(8, 0.5, true); // desenha cilindro base
 	glTranslatef(0.0f, 0.0f, 0.5); // translação do cilindro base
 	glColor3f(0.25, 0.25, 0.25);
-	drawDisk(0.3, 8); //disco que fica dentro do cilindro
+	drawDisk(0.3, 8, true); //disco que fica dentro do cilindro
 
 	glColor3f(1, 1, 1);
 	// draws the base
 	drawCylinder(diameterBase, heightBase, false); // desenha cilindro base
 	glTranslatef(0.0f, 0.0f, heightBase); // translação do cilindro base
-	drawDisk(diameterCylinder, diameterBase); //disco que fica dentro do cilindro
+	drawDisk(diameterCylinder, diameterBase, false); //disco que fica dentro do cilindro
 
 	// move to arm referential
 	glRotatef(angleArm, 0.0f, 0.0f, 1.0f); //angulo do braço em relação ao referencial (braço aberto)
@@ -448,7 +454,7 @@ void drawScene(void) {
 	}
 	glend();*/
 	glColor3f(0, 0, 0);
-	drawDisk(0,0.2);
+	drawDisk(0,0.2, false);
 
 
 	glPopMatrix();
@@ -469,7 +475,7 @@ void drawScene(void) {
 	}
 	glend();*/
 	glColor3f(0, 0, 0);
-	drawDisk(0, 0.2);
+	drawDisk(0, 0.2, false);
 
 	glPopMatrix();
 	glPushMatrix();
